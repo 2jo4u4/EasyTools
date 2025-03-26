@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Microphone Detect</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/7.8.1/rxjs.umd.min.js"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="../dist/umd/index.min.js"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <button disabled onclick="startDetectMic();">Start Detect</button>
+      <button disabled onclick="stopDetectMic();">Stop Detect</button>
+      <button disabled onclick="linkSpeaker();">Link Speaker</button>
+      <button disabled onclick="unlinkSpeaker();">Unlink Speaker</button>
+    </div>
+    <script>
+      const canvas = document.createElement("canvas");
+      const canvasCtx = canvas.getContext("2d");
+      document.body.append(canvas);
+
+      const audioContext = new AudioContext();
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+
+      var media = new easytools.MediaPermission({ audio: true });
+      media.requestPermissions().then((boo) => {
+        document.querySelectorAll("button").forEach((el) => {
+          el.disabled = !boo;
+        });
+      });
+      (function draw() {
+        requestAnimationFrame(draw);
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        analyser.getByteFrequencyData(dataArray);
+
+        canvasCtx.fillStyle = "gray";
+        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const barWidth = (canvas.width / bufferLength) * 2.5;
+        let x = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          const barHeight = dataArray[i] / 2;
+          canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 150)`;
+          canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+          x += barWidth + 1;
+        }
+      })();
+
+      /** @type {MediaStream | null} */
+      let stream = null;
+      /** @type {MediaStreamAudioSourceNode | null} */
+      let source = null;
+      async function startDetectMic() {
+        if (stream) return;
+        stream = await media.requestMediaStream();
+        source = audioContext.createMediaStreamSource(stream);
+        source.connect(analyser);
+        console.log("startDetectMic");
+      }
+
+      function stopDetectMic() {
+        if (stream) {
+          console.log("stopDetectMic");
+          source.disconnect();
+          stream.getTracks().forEach((track) => {
+            track.stop();
+          });
+          stream = null;
+          source = null;
+          unlinkSpeaker();
+        }
+      }
+
+      let isLink = false;
+      function linkSpeaker() {
+        if (!isLink && stream) {
+          analyser.connect(audioContext.destination);
+          isLink = !isLink;
+          console.log("link");
+        }
+      }
+      function unlinkSpeaker() {
+        if (isLink) {
+          analyser.disconnect();
+          isLink = !isLink;
+          console.log("unlink");
+        }
+      }
+      ///
+    </script>
+  </body>
+</html>

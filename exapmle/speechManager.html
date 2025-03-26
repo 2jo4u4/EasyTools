@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Speech Manager</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/7.8.1/rxjs.umd.min.js"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="../dist/umd/index.min.js"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+  </head>
+  <body>
+    <label for="input">upload audio file</label>
+    <input id="input" type="file" multiple accept="audio/*" />
+    <button onclick="stopSpeech();">stop</button>
+    <button onclick="nextSpeech();">next</button>
+    <button onclick="whitenoise();">add white noise</button>
+    <script>
+      const audioContext = new AudioContext();
+      var speech = new easytools.SpeechManager(audioContext);
+
+      const inputField = document.querySelector("input");
+      inputField.onchange = function onchange() {
+        for (let index = 0; index < this.files.length; index++) {
+          const file = this.files[index];
+
+          const reader = new FileReader();
+
+          reader.onload = function (event) {
+            const arrayBuffer = event.target.result;
+            audioContext.decodeAudioData(arrayBuffer, function (audioBuffer) {
+              speech.addBuffer(audioBuffer);
+              const isSuccess = speech.startSpeech();
+            });
+          };
+          reader.readAsArrayBuffer(file);
+        }
+      };
+
+      function nextSpeech() {
+        const isSuccess = speech.nextSpeech();
+        if (!isSuccess) {
+          alert("Empty");
+        }
+      }
+      function stopSpeech() {
+        const isSuccess = speech.stopSpeech();
+      }
+
+      function whitenoise() {
+        speech.addBuffer(easytools.whitenoise(audioContext));
+        const isSuccess = speech.startSpeech();
+      }
+    </script>
+  </body>
+</html>
