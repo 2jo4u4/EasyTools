@@ -10,8 +10,13 @@
   },
   "keywords": [],
   "author": "jay.huang",
-  "license": "ISC",
-  "description": "",
+  "license": "MIT",
+  "description": "provides some tools",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/2jo4u4/EasyTools"
+  },
+  "homepage": "https://github.com/2jo4u4/EasyTools",
   "files": [
     "dist"
   ],
