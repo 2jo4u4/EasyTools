@@ -62,11 +62,11 @@ Socket class defindefinition
 |int16ToFloat32|transfer data|
 |float32ToInt16|transfer data|
 
-> PCM formation in JavaScript
+> PCM formation in JavaScript,
 > We can use Int16Array to store
 
-> If you want to play audio
-> We neet to get AudioBuffer
+> If you want to play audio,
+> We need to get AudioBuffer,
 > AudioBuffer can use Float32Array to get
 
 Please see [speech example](./example/speechManager.html)
